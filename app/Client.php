@@ -12,7 +12,7 @@ class Client extends MyModel
     protected $table = 'clients';
 
     protected $fillable = [
-        'client_name', 'phone_number', 'branch_releated', 'created_id', 'updated_id', 'deleted_id',
+        'client_name', 'phone_number', 'branch_releated', 'dealer_releated', 'created_id', 'updated_id', 'deleted_id',
     ];
 
     public static function getList($searchData)
@@ -29,7 +29,16 @@ class Client extends MyModel
                 unset($searchData["branch_id"]);
             }
         })
-            ->Join('dealers', 'dealers.id', '=', 'branchs.dealer_releated')
+            ->Join('dealers', function ($join) use ($searchData) {
+                $join->on('dealers.id', '=', 'clients.dealer_releated');
+                $join->whereNull('dealers.deleted_at');
+
+                if (isset($searchData['dealer_id']) && $searchData['dealer_id']) {
+                    $join->where('dealers.id', $searchData['dealer_id']);
+
+                    unset($searchData["dealer_id"]);
+                }
+            })
             ->select('clients.*', 'branchs.branch_name', 'dealers.dealer_name');
 
         if (isset($searchData['keyword']) && $searchData['keyword']) {

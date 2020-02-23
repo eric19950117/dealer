@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Branch;
 use App\Client;
+use App\Dealer;
 use Illuminate\Http\Request;
 use Auth;
 
@@ -36,6 +37,7 @@ class ClientController extends MY_BackendController
         $data = array();
         $data["result"] = Client::getList($searchData)->paginate($this->perPage);
         $data["branchs"] = array_merge([0 => "請選擇"], Branch::pluck('branch_name', 'id')->toArray());
+        $data["dealers"] = array_merge([0 => "請選擇"], Dealer::pluck('dealer_name', 'id')->toArray());
         $data["searchData"] = $searchData;
         $data["sidebar_id"] = $this->sidebar_id;
         $data["perPage"] = $this->perPage;
@@ -56,7 +58,6 @@ class ClientController extends MY_BackendController
 
         $data = array();
 
-        
 
         $data["branchs"] = Branch::pluck('branch_name', 'id');
 
@@ -111,6 +112,7 @@ class ClientController extends MY_BackendController
         $data = array();
         $data['data'] = Client::find($id);
         $data['branchs'] = Branch::pluck('branch_name', 'id');
+
         $data['title'] = $this->title;
 
         return view("backend.client.forms", $data);

@@ -62,7 +62,7 @@
                                 </div>
                             </div>
                             <div class="form-group form-md-line-input">
-                                <label class="col-md-3 control-label" for="phone_number"">客戶電話：
+                                <label class="col-md-3 control-label" for="phone_number">客戶電話：
                                     <span class="required">*</span>
                                 </label>
                                 <div class="col-md-9">
@@ -185,6 +185,7 @@
                 handleValidation1();
             }
         };
+
     }();
 
     jQuery(document).ready(function() {

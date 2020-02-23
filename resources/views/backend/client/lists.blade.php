@@ -28,6 +28,12 @@
                                 </div>
                             </div>
                             <div class="form-group">
+                                <label class="col-md-3 control-label">經銷商</label>
+                                <div class="col-md-4">
+                                    {{ Form::select('dealer_id', $dealers, null, ['id'=>'dealer_id', 'class'=>'form-control']) }}
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label class="col-md-3 control-label">分店</label>
                                 <div class="col-md-4">
                                     {{ Form::select('branch_id', $branchs, null, ['id'=>'branch_id', 'class'=>'form-control']) }}
@@ -134,3 +140,5 @@
 </div>
 <!-- END CONTENT -->
 @endsection
+
+
