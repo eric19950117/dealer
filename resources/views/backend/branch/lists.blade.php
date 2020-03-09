@@ -57,7 +57,7 @@
                         @if(strrpos($permission, "[".$sidebar_id."B],") !== false)
                         <div class="tools">
                             <button type="button" class="btn btn-info"
-                                onclick="location.href = '/backend/dealer/branch/lists/add';">新增</button>
+                                onclick="location.href = '/backend/branch/add';">新增</button>
                         </div>
                         @endif
 
@@ -90,7 +90,7 @@
                                     <td>
                                         {{-- TODO: 判斷是否有編輯和刪除權限 --}}
                                         @if(strrpos($permission, "[".$sidebar_id."C],") !== false)
-                                        <a class="btn green btn-xs" href="/backend/dealer/branch/lists/upd/{{ $rs->id }}">編輯</a>
+                                        <a class="btn green btn-xs" href="/backend/branch/upd/{{ $rs->id }}">編輯</a>
                                         @endif
                                         @if(strrpos($permission, "[".$sidebar_id."D],") !== false)
                                         <a class="btn btn-danger btn-xs" data-toggle="modal" href="#draggable"
@@ -125,7 +125,7 @@
                 <button type="button" class="btn dark btn-outline" data-dismiss="modal">取消</button>
                 <button type="button" class="btn btn-danger" onclick="$('#DeleteActions').submit();">刪除</button>
             </div>
-            <form action="/backend/dealer/branch/lists/delData" method="post" id="DeleteActions">
+            <form action="/backend/branch/delData" method="post" id="DeleteActions">
                 @csrf
                 <input type="hidden" name="op" id="op" value="del" />
                 <input type="hidden" name="id" id="id" />

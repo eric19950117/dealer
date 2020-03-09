@@ -104,7 +104,7 @@ class BranchController extends MY_BackendController
             $request->session()->flash('statusMsg', '新增失敗');
         }
 
-        return redirect("/backend/dealer/branch");
+        return redirect("/backend/branch/lists");
     }
 
     public function upd(Request $request, $id)

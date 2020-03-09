@@ -74,6 +74,16 @@
                             </div>
 
                             <div class="form-group form-md-line-input">
+                                <label class="col-md-3 control-label" for="dealer_releated">選擇經銷商：
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-md-9">
+                                    {{ Form::select('dealer_releated', $dealers, null, ['id'=>'dealer_releated', 'class'=>'form-control']) }}
+                                    <div class="form-control-focus"> </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input">
                                 <label class="col-md-3 control-label" for="branch_releated">選擇分店：
                                     <span class="required">*</span>
                                 </label>
@@ -87,7 +97,7 @@
                             <div class="row">
                                 <div class="col-md-offset-3 col-md-9">
                                     <button type="submit" class="btn green">送出</button>
-                                    <button type="button" class="btn default" onclick="location.href = '/backend/dealer/client/lists';">取消</button>
+                                    <button type="button" class="btn default" onclick="location.href = '/backend/client/lists';">取消</button>
                                 </div>
                             </div>
                         </div>
@@ -105,6 +115,7 @@
 @endsection
 @section('script')
 <script>
+
     var FormValidationMd = function() {
 
         var handleValidation1 = function() {
@@ -125,6 +136,7 @@
                 messages: {
                     client_name: "請輸入客戶名稱",
                     phone_number: "請輸入客戶電話",
+                    dealer_releated: "請選擇經銷商",
                     branch_releated: "請選擇分店",
                 },
                 rules: {
@@ -132,6 +144,9 @@
                         required: true
                     },
                     phone_number: {
+                        required: true
+                    },
+                    dealer_releated: {
                         required: true
                     },
                     branch_releated: {
@@ -188,8 +203,35 @@
 
     }();
 
+    function api(dealer_releated){
+        $.ajax({
+            url: '/backend/client/searchBranch',
+            dataType: "json",
+            type: "GET",
+            data: {
+                api: dealer_releated
+            },
+            success: function (data) {
+                // if (data.length === 0) {
+                //     $('#branch_releated').html("<option value="">無分店</option>");
+                // }
+                for(var i=0;i< data.length;i++) {
+                    var id = data[i].id;
+                    var branch_name = data[i].branch_name;
+                    $('#branch_releated').append("<option value='" + id + "'>" + branch_name + "</option>")
+                }
+            }
+        })
+    }
+
+
     jQuery(document).ready(function() {
         FormValidationMd.init();
+        $('#dealer_releated').change(function(){
+            $('#branch_releated').html('');
+            var dealer_releated = $('#dealer_releated').val();
+            api(dealer_releated);
+        });
     });
 </script>
 @endsection

@@ -1,3 +1,5 @@
+{{-- TODO: 此為下拉式選單有請選擇的情況 --}}
+
 @extends('backend.shared.master')
 @section('content')
 <!-- BEGIN CONTENT -->
@@ -52,62 +54,63 @@
                             @endif
 
                             <div class="form-group form-md-line-input">
-                                <label class="col-md-3 control-label" for="branch_name">店名：
-                                    <span class="required">*</span>
-                                </label>
-                                <div class="col-md-9">
-                                    {!! Form::text('branch_name', null, ['class' => 'form-control', "id"=> 'branch_name']) !!}
-                                    <div class="form-control-focus"> </div>
-                                    <span class="help-block">請輸入店名</span>
-                                </div>
-                            </div>
-                            <div class="form-group form-md-line-input">
-                                <label class="col-md-3 control-label" for="phone_number"">電話：
-                                    <span class="required">*</span>
-                                </label>
-                                <div class="col-md-9">
-
-                                        {!! Form::text('phone_number', null, ['class' => 'form-control', "id"=> 'phone_number']) !!}
-                                        <div class="form-control-focus"> </div>
-                                        <span class="help-block">請輸入電話</span>
-
-                                </div>
-                            </div>
-
-                            <div class="form-group form-md-line-input">
-                                <label class="col-md-3 control-label" for="address">地址：
-                                    <span class="required">*</span>
-                                </label>
-                                <div class="col-md-9">
-                                    {!! Form::text('address', null, ['class' => 'form-control', "id"=> 'address']) !!}
-                                    <div class="form-control-focus"> </div>
-                                    <span class="help-block">請輸入地址</span>
-                                </div>
-                            </div>
-
-                            <div class="form-group form-md-line-input">
-                                <label class="col-md-3 control-label" for="gui_number">統編：
-                                    <span class="required">*</span>
-                                </label>
-                                <div class="col-md-9">
-                                    {!! Form::text('gui_number', null, ['class' => 'form-control', "id"=> 'gui_number']) !!}
-                                    <div class="form-control-focus"> </div>
-                                    <span class="help-block">請輸入統一編號</span>
-                                </div>
-                            </div>
-
-                            <div class="form-group form-md-line-input">
                                 <label class="col-md-3 control-label" for="dealer_releated">選擇經銷商：
                                     <span class="required">*</span>
                                 </label>
                                 <div class="col-md-9">
-                                    {{-- @php
-                                        echo '<pre>';
-                                        print_r($dealers);
-                                        exit;
-                                    @endphp --}}
                                     {{ Form::select('dealer_releated', $dealers, null, ['id'=>'dealer_releated', 'class'=>'form-control']) }}
                                     <div class="form-control-focus"> </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input">
+                                <label class="col-md-3 control-label" for="branch_releated">選擇分店：
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-md-9">
+                                    {{ Form::select('branch_releated', $branchs, null, ['id'=>'branch_releated', 'class'=>'form-control']) }}
+                                    <div class="form-control-focus"> </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-md-line-input">
+                                <label class="col-md-3 control-label" for="client_releated">選擇客戶：
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-md-9">
+                                    {{ Form::select('client_releated', $clients, null, ['id'=>'client_releated', 'class'=>'form-control']) }}
+                                    <div class="form-control-focus"> </div>
+                                </div>
+                            </div>
+                            <div class="form-group form-md-line-input">
+                                <label class="col-md-3 control-label" for="admin_releated">指派人員：
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-md-9">
+                                    {{ Form::select('admin_releated', $admins, null, ['id'=>'admin_releated', 'class'=>'form-control']) }}
+                                    <div class="form-control-focus"> </div>
+                                </div>
+                            </div>
+                            <div class="form-group form-md-line-input">
+                                <label class="col-md-3 control-label" for="mission_name">任務名稱：
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-md-9">
+                                        {!! Form::text('mission_name', null, ['class' => 'form-control', "id"=> 'mission_name']) !!}
+                                        <div class="form-control-focus"> </div>
+                                        <span class="help-block">請輸入任務名稱</span>
+
+                                </div>
+                            </div>
+                            <div class="form-group form-md-line-input">
+                                <label class="col-md-3 control-label" for="mission_content">任務內容：
+                                    <span class="required">*</span>
+                                </label>
+                                <div class="col-md-9">
+                                        {!! Form::text('mission_content', null, ['class' => 'form-control', "id"=> 'mission_content']) !!}
+                                        <div class="form-control-focus"> </div>
+                                        <span class="help-block">請輸入任務內容</span>
+
                                 </div>
                             </div>
                         </div>
@@ -115,7 +118,7 @@
                             <div class="row">
                                 <div class="col-md-offset-3 col-md-9">
                                     <button type="submit" class="btn green">送出</button>
-                                    <button type="button" class="btn default" onclick="location.href = '/backend/branch/lists';">取消</button>
+                                    <button type="button" class="btn default" onclick="location.href = '/backend/mission/lists';">取消</button>
                                 </div>
                             </div>
                         </div>
@@ -133,6 +136,7 @@
 @endsection
 @section('script')
 <script>
+
     var FormValidationMd = function() {
 
         var handleValidation1 = function() {
@@ -151,32 +155,32 @@
                 focusInvalid: false, // do not focus the last invalid input
                 ignore: "", // validate all fields including form hidden input
                 messages: {
-                    branch_name: "請輸入店名",
-                    phone_number: "請輸入電話",
-                    gui_number: {
-                        required: "請輸入信箱",
-                        rangelength: "請輸入正確的統編格式"
-                    },
-                    address: "請輸入地址",
+                    mission_name: "請輸入任務名稱",
+                    mission_content: "請輸入任務內容",
+                    admin_releated: "請選擇指派人",
                     dealer_releated: "請選擇經銷商",
+                    branch_releated: "請選擇分店",
+                    client_releated: "請選擇客戶",
                 },
                 rules: {
-                    branch_name: {
+                    mission_name: {
                         required: true
                     },
-                    phone_number: {
+                    mission_content: {
                         required: true
                     },
-                    gui_number: {
-                        required: true,
-                        rangelength:[8,8], // TODO: 必须输入正确格式的电子邮件。
-                    },
-                    address: {
+                    admin_releated: {
                         required: true
                     },
                     dealer_releated: {
                         required: true
-                    }
+                    },
+                    branch_releated: {
+                        required: true
+                    },
+                    client_releated: {
+                        required: true
+                    },
                 },
                 invalidHandler: function(event, validator) { //display error alert on form submit
                     success1.hide();
@@ -225,10 +229,72 @@
                 handleValidation1();
             }
         };
+
     }();
+
+    function api_branch(dealer_releated){
+        $.ajax({
+            url: '/backend/mission/searchBranch',
+            dataType: "json",
+            type: "GET",
+            data: {
+                api_branch: dealer_releated
+            },
+            success: function (data) {
+                // if (data.length === 0) {
+                //     $('#branch_releated').html("<option value=''>無分店</option>");
+                // }
+                $('#branch_releated').html("<option value='0'>請選擇</option>");
+
+                for(var i=0;i< data.length;i++) {
+                    var id = data[i].id;
+                    var branch_name = data[i].branch_name;
+                    $('#branch_releated').append("<option value='" + id + "'>" + branch_name + "</option>")
+                }
+            }
+        })
+    }
+
+    function api_client(branch_releated){
+        $.ajax({
+            url: '/backend/mission/searchClient',
+            dataType: "json",
+            type: "GET",
+            data: {
+                api_client: branch_releated
+            },
+            success: function (data) {
+                // if (data.length === 0) {
+                //     $('#branch_releated').html("<option value=''>無分店</option>")
+                // }
+                $('#client_releated').html("<option value='0'>請選擇</option>");
+
+                for(var i=0;i< data.length;i++) {
+                    var id = data[i].id;
+                    var client_name = data[i].client_name;
+                    $('#client_releated').append("<option value='" + id + "'>" + client_name + "</option>")
+                }
+            }
+        })
+    }
+
 
     jQuery(document).ready(function() {
         FormValidationMd.init();
+
+        $('#dealer_releated').change(function(){
+            $('#branch_releated').html('');
+            $('#client_releated').html("<option value='0'>請選擇</option>");
+            var dealer_releated = $('#dealer_releated').val();
+            api_branch(dealer_releated);
+        });
+
+
+        $('#branch_releated').change(function(){
+            $('#client_releated').html('');
+            var branch_releated = $('#branch_releated').val();
+            api_client(branch_releated);
+        });
     });
 </script>
 @endsection

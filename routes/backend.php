@@ -58,75 +58,102 @@ Route::group(['prefix' => 'backend', 'as' => 'backend::', 'middleware' => ['auth
     Route::group(['prefix' => 'dealer', 'as' => 'dealer::'], function () {
         // 列表
         Route::get('/', 'Backend\DealerController@lists');
+        Route::get('lists', 'Backend\DealerController@lists');
+        // 新增
+        Route::get('add', 'Backend\DealerController@add');
+        //修改
+        Route::get('upd/{id}', 'Backend\DealerController@upd')->where('id', '[0-9]+');
 
-        Route::group(['prefix' => 'lists', 'as' => 'lists::'], function () {
-            // 列表
-            Route::get('/', 'Backend\DealerController@lists');
-            // 新增
-            Route::get('add', 'Backend\DealerController@add');
-            //修改
-            Route::get('upd/{id}', 'Backend\DealerController@upd')->where('id', '[0-9]+');
+        //新增送出
+        Route::post('add', 'Backend\DealerController@addPost');
+        //修改送出
+        Route::post('upd/{id}', 'Backend\DealerController@updPost')->where('id', '[0-9]+');
+        //刪除資料
+        Route::post('delData', 'Backend\DealerController@delData');
+    });
 
-            //新增送出
-            Route::post('add', 'Backend\DealerController@addPost');
-            //修改送出
-            Route::post('upd/{id}', 'Backend\DealerController@updPost')->where('id', '[0-9]+');
 
-            //刪除資料
-            Route::post('delData', 'Backend\DealerController@delData');
-        });
+    // 分店管理
+    Route::group(['prefix' => 'branch', 'as' => 'branch::'], function () {
+        // 列表
+        Route::get('/', 'Backend\BranchController@lists');
+        Route::get('lists', 'Backend\BranchController@lists');
 
-        // 分店管理
-        Route::group(['prefix' => 'branch', 'as' => 'branch::'], function () {
-            // 列表
-            Route::get('/', 'Backend\BranchController@lists');
+        // 新增
+        Route::get('add', 'Backend\BranchController@add');
+        //修改
+        Route::get('upd/{id}', 'Backend\BranchController@upd')->where('id', '[0-9]+');
+        //新增送出
+        Route::post('add', 'Backend\BranchController@addPost');
+        //修改送出
+        Route::post('upd/{id}', 'Backend\BranchController@updPost')->where('id', '[0-9]+');
+        //刪除資料
+        Route::post('delData', 'Backend\BranchController@delData');
+    });
 
-            Route::group(['prefix' => 'lists', 'as' => 'list::'], function () {
-                // 列表
-                Route::get('/', 'Backend\BranchController@lists');
+    Route::group(['prefix' => 'client', 'as' => 'client::'], function () {
+        // 列表
+        Route::get('/', 'Backend\ClientController@lists');
+        Route::get('lists', 'Backend\ClientController@lists');
 
-                // 新增
-                Route::get('add', 'Backend\BranchController@add');
-                //修改
-                Route::get('upd/{id}', 'Backend\BranchController@upd')->where('id', '[0-9]+');
+        // 新增
+        Route::get('add', 'Backend\ClientController@add');
+        //修改
+        Route::get('upd/{id}', 'Backend\ClientController@upd')->where('id', '[0-9]+');
+        //新增送出
+        Route::post('add', 'Backend\ClientController@addPost');
+        //修改送出
+        Route::post('upd/{id}', 'Backend\ClientController@updPost')->where('id', '[0-9]+');
+        //刪除資料
+        Route::post('delData', 'Backend\ClientController@delData');
 
-                //新增送出
-                Route::post('add', 'Backend\BranchController@addPost');
-                //修改送出
-                Route::post('upd/{id}', 'Backend\BranchController@updPost')->where('id', '[0-9]+');
+        //選擇經銷商後顯示分店的下拉式選項
+        Route::get('searchBranch', 'Backend\ClientController@searchBranch');
 
-                //刪除資料
-                Route::post('delData', 'Backend\BranchController@delData');
-            });
-        });
+        //匯出資料
+        Route::get('exportExcel', 'Backend\ClientController@exportExcel');
+    });
 
-        Route::group(['prefix' => 'client', 'as' => 'client::'], function () {
-             // 列表
-             Route::get('/', 'Backend\ClientController@lists');
+    Route::group(['prefix' => 'mission', 'as' => 'mission::'], function () {
+        // 列表
+        Route::get('/', 'Backend\MissionController@lists');
+        Route::get('lists', 'Backend\MissionController@lists');
 
-             Route::group(['prefix' => 'lists', 'as' => 'lists::'], function () {
-                // 列表
-                Route::get('/', 'Backend\ClientController@lists');
+        // 新增
+        Route::get('add', 'Backend\MissionController@add');
+        //修改
+        Route::get('upd/{id}', 'Backend\MissionController@upd')->where('id', '[0-9]+');
 
-                // 新增
-                Route::get('add', 'Backend\ClientController@add');
-                //修改
-                Route::get('upd/{id}', 'Backend\ClientController@upd')->where('id', '[0-9]+');
+        //新增送出
+        Route::post('add', 'Backend\MissionController@addPost');
+        //修改送出
+        Route::post('upd/{id}', 'Backend\MissionController@updPost')->where('id', '[0-9]+');
 
-                //新增送出
-                Route::post('add', 'Backend\ClientController@addPost');
-                //修改送出
-                Route::post('upd/{id}', 'Backend\ClientController@updPost')->where('id', '[0-9]+');
+        // 搜尋分店
+        Route::get('searchBranch', 'Backend\MissionController@searchBranch');
+        // 搜尋客戶
+        Route::get('searchClient', 'Backend\MissionController@searchClient');
 
-                //刪除資料
-                Route::post('delData', 'Backend\ClientController@delData');
+        //匯出資料
+        Route::get('exportExcel', 'Backend\MissionController@exportExcel');
+    });
 
-             });
+    Route::group(['prefix' => 'mission_advance', 'as' => 'mission_advance::'], function () {
+        // 列表
+        Route::get('/', 'Backend\MissionAdvanceController@lists');
+        Route::get('lists', 'Backend\MissionAdvanceController@lists');
 
-        });
+        // 新增
+        Route::get('add', 'Backend\MissionAdvanceController@add');
+        //修改
+        Route::get('upd/{id}', 'Backend\MissionAdvanceController@upd')->where('id', '[0-9]+');
+
+        //新增送出
+        Route::post('add', 'Backend\MissionAdvanceController@addPost');
+        //修改送出
+        Route::post('upd/{id}', 'Backend\MissionAdvanceController@updPost')->where('id', '[0-9]+');
     });
 });
-
 
 /* 不用驗證 */
 Route::group(['prefix' => 'backend', 'as' => 'backend::'], function () {

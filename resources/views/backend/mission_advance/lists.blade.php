@@ -24,7 +24,7 @@
                                 <label class="col-md-3 control-label" for="keyword">關鍵字</label>
                                 <div class="col-md-4">
                                     {!! Form::text('keyword', null, ['class' => 'form-control', "id"=> 'keyword',
-                                    "placeholder"=>"可輸入姓名、電話、分店名稱"]) !!}
+                                    "placeholder"=>"可輸入經銷商、分店、客戶、任務名稱"]) !!}
                                 </div>
                             </div>
                             <div class="form-group">
@@ -36,8 +36,15 @@
                             <div class="form-group">
                                 <label class="col-md-3 control-label">分店</label>
                                 <div class="col-md-4">
-                                    {{-- {{ Form::select('branch_id', $branchs, null, ['id'=>'branch_id', 'class'=>'form-control']) }} --}}
                                     <select id="branch_id" class="form-control" disabled="disabled" name="branch_id">
+                                        <option value="0">請選擇</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 control-label">客戶</label>
+                                <div class="col-md-4">
+                                    <select id="client_id" class="form-control" disabled="disabled" name="client_id">
                                         <option value="0">請選擇</option>
                                     </select>
                                 </div>
@@ -45,14 +52,9 @@
                         </div>
                         <div class="form-actions">
                             <div class="row">
-                                <div class="col-md-offset-3 col-md-1">
-                                    <button type="submit" class="btn green" onclick="searchFormBtnClick(0)">搜尋</button>
+                                <div class="col-md-offset-3 col-md-9">
+                                    <button type="submit" class="btn green">搜尋</button>
                                 </div>
-                                @if (strrpos($permission, "[". $sidebar_id ."E],") !== false)
-                                <div class="col-md-8">
-                                    <button type="button" class="btn green" onclick="searchFormBtnClick(1)">匯出</button>
-                                </div>
-                                @endif
                             </div>
                         </div>
                         {!! Form::close() !!}
@@ -71,7 +73,7 @@
                         @if(strrpos($permission, "[".$sidebar_id."B],") !== false)
                         <div class="tools">
                             <button type="button" class="btn btn-info"
-                                onclick="location.href = '/backend/client/add';">新增</button>
+                                onclick="location.href = '/backend/mission_advance/add';">新增</button>
                         </div>
                         @endif
 
@@ -84,7 +86,9 @@
                                     <th> 經銷商 </th>
                                     <th> 分店名稱 </th>
                                     <th> 客戶名稱 </th>
-                                    <th> 客戶電話 </th>
+                                    <th> 指派人員 </th>
+                                    <th> 任務名稱 </th>
+                                    <th> 任務內容 </th>
                                     <th> 功能 </th>
                                 </tr>
                             </thead>
@@ -97,11 +101,13 @@
                                     <td> {{ $rs->dealer_name }} </td>
                                     <td> {{ $rs->branch_name }} </td>
                                     <td> {{ $rs->client_name }} </td>
-                                    <td> {{ $rs->phone_number }} </td>
+                                    <td> {{ $rs->admin_name }} </td>
+                                    <td> {{ $rs->mission_name }} </td>
+                                    <td> {{ mb_substr(strip_tags($rs->mission_content), 0, 30, "utf-8")."..." }} </td>
                                     <td>
                                         {{-- TODO: 判斷是否有編輯和刪除權限 --}}
                                         @if(strrpos($permission, "[".$sidebar_id."C],") !== false)
-                                        <a class="btn green btn-xs" href="/backend/client/upd/{{ $rs->id }}">編輯</a>
+                                        <a class="btn green btn-xs" href="/backend/mission_advance/upd/{{ $rs->id }}">編輯</a>
                                         @endif
                                         @if(strrpos($permission, "[".$sidebar_id."D],") !== false)
                                         <a class="btn btn-danger btn-xs" data-toggle="modal" href="#draggable"
@@ -136,7 +142,7 @@
                 <button type="button" class="btn dark btn-outline" data-dismiss="modal">取消</button>
                 <button type="button" class="btn btn-danger" onclick="$('#DeleteActions').submit();">刪除</button>
             </div>
-            <form action="/backend/client/delData" method="post" id="DeleteActions">
+            <form action="/backend/mission_advance/delData" method="post" id="DeleteActions">
                 @csrf
                 <input type="hidden" name="op" id="op" value="del" />
                 <input type="hidden" name="id" id="id" />
@@ -151,16 +157,6 @@
 
 @section('script')
     <script>
-        function searchFormBtnClick(type){
-            if(type){
-                // alert(1);
-                $("#searchForm").attr("action","/backend/client/exportExcel");
-            }else{
-                // alert(2);
-                $("#searchForm").attr("action","/backend/client");
-            }
-            $("#searchForm").submit();
-        }
 
         // TODO: laravel blade get url parameter -> blade頁面抓取網址參數的方法
         // TODO: 頁面上已經有取得 branch_id ， 可以使用controller內的 $data傳入的$searchData取值($request->all())
@@ -174,13 +170,20 @@
             var branch_id = 0;
         @endif
 
-        function api(dealer){
+        @if ((app('request')->input('client_id') ))
+            var client_id = '{{ app('request')->input('client_id') }}';
+        @else
+            var client_id = 0;
+        @endif
+
+        function api_branch(dealer){
+
             $.ajax({
-            url: '/backend/client/searchBranch',
+            url: '/backend/mission/searchBranch',
             dataType: "json",
             type: "GET",
             data: {
-                api: dealer
+                api_branch: dealer
             },
             success: function (data) {
 
@@ -189,54 +192,84 @@
                 for (var i = 0; i < data.length; i++) {
                     var id = data[i].id;
                     var branch_name = data[i].branch_name;
-                    // TODO: 判斷從網址取得的參數和迴圈取得的id是否一樣
-                    // if(id == branch_id){
-                    //     // console.log('branch_id', branch_id);
-                    //     // console.log('id', id);
-                    //     // console.log('//');
-                    //     $('#branch_id').append("<option value='" + id + "' selected>" + branch_name + "</option>");
-                    // }
-                    // else{
-                    //     // console.log('///');
-                    //     // console.log('branch_id', branch_id);
-                    //     // console.log('id', id);
-                    //     $('#branch_id').append("<option value='" + id + "'>" + branch_name + "</option>");
-                    // }
-                    $('#branch_id').append("<option value='" + id + "'>" + branch_name + "</option>");
+                    if(id == branch_id){
+                        $('#branch_id').append("<option value='" + id + "' selected>" + branch_name + "</option>");
+                    }
+                    else{
+                        $('#branch_id').append("<option value='" + id + "'>" + branch_name + "</option>");
+                    }
                 }
                 $('#branch_id').removeAttr("disabled");
-                // TODO: jquery select set value ->  $("#sfs").val(3);  //設定值為3的選項被選取
-                $('#branch_id').val(branch_id);
-                // TODO: 讓 branch_id 歸零 -> 讓原本搜尋的分店資料歸零，在搜尋其他經銷商時才不會有bug
-                branch_id = 0;
+
+                // TODO: 判斷在有分店值的時候跑下方搜尋客戶api
+                // FIXME: var branch_id = $('#branch_id').val(); 會起衝突 branch_id會變成undefined
+                branch_id = $('#branch_id').val();
+                if (branch_id) {
+                    api_client(branch_id);
+                }
             }
         })
     }
 
-    // function api(dealer){
-    //         $.get("/backend/client/searchBranch?api=" + dealer,function(data){
-    //             console.log(data);
-    //             $('#branch_id').html("<option value='0'>請選擇</option>");
-    //             for(var i=0;i< data.length;i++) {
-    //                 var id = data[i].id;
-    //                 var branch_name = data[i].branch_name;
-    //                 $('#branch_id').append("<option value='" + id + "'>" + branch_name + "</option>")
-    //             }
-    //             $('#branch_id').removeAttr("disabled");
-    //         });
-    //     }
+    function api_client(branch){
+            $.ajax({
+            url: '/backend/mission/searchClient',
+            dataType: "json",
+            type: "GET",
+            data: {
+                api_client: branch
+            },
+            success: function (data) {
+
+                $('#client_id').html("<option value='0'>請選擇</option>");
+
+                for (var i = 0; i < data.length; i++) {
+                    var id = data[i].id;
+                    var client_name = data[i].client_name;
+                    if(id == client_id){
+                        $('#client_id').append("<option value='" + id + "' selected>" + client_name + "</option>");
+                    }
+                    else{
+                        $('#client_id').append("<option value='" + id + "'>" + client_name + "</option>");
+                    }
+                    // $('#client_id').append("<option value='" + id + "'>" + client_name + "</option>");
+                }
+                $('#client_id').removeAttr("disabled");
+                // $('#client_id').val(client_id);
+                // client_id = 0;
+            }
+        })
+    }
 
         $(function(){
             // TODO: 假如有選取經銷商，則會跑ajax
             if ($('#dealer_id').val() !== '0') {
-                api($('#dealer_id').val())
+
+                api_branch($('#dealer_id').val());
+            }
+            if ($('#branch_id').val() !== '0') {
+                // alert(2);
+                api_client($('#branch_id').val());
             }
             // TODO: 判斷是否選擇經銷商
             $('#dealer_id').change(function(){
                 if($('#dealer_id').val() === '0'){
                     $('#branch_id').attr("disabled",true);
+                    $('#client_id').attr("disabled",true);
+                    $('#branch_id').html("<option value='0'>請選擇</option>");
+                    $('#client_id').html("<option value='0'>請選擇</option>");
+
                 }else{
-                    api($('#dealer_id').val())
+                    $('#client_id').html("<option value='0'>請選擇</option>");
+                    api_branch($('#dealer_id').val());
+                }
+            });
+            $('#branch_id').change(function(){
+                if($('#branch_id').val() === '0'){
+                    $('#client_id').attr("disabled",true);
+                    $('#client_id').html("<option value='0'>請選擇</option>");
+                }else{
+                    api_client($('#branch_id').val());
                 }
             });
         });

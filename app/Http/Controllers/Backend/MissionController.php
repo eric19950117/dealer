@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Dealer;
 use App\Branch;
 use App\Client;
-use App\Dealer;
+use App\Mission;
+use App\Admin;
 use Illuminate\Http\Request;
 use Auth;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -12,24 +14,24 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class ClientController extends MY_BackendController
+class MissionController extends MY_BackendController
 {
-
-    public $sidebar_id = 7;
+    public $sidebar_id = 8;
     public $permission = '';
-    public $title = '客戶管理';
+    public $title = '任務分配';
+    public $admin = '';
 
     public function __construct(Request $request)
     {
         $this->middleware(function ($request, $next) {
             $this->permission = $permission = Auth::user()->adminGroup->permission;
-
             return $next($request);
         });
     }
 
     public function lists(Request $request)
     {
+
         if (strrpos($this->permission, "[" . $this->sidebar_id . "A],") === false) {
             $request->session()->flash('statusCode', '3');
             $request->session()->flash('statusMsg', '權限不足');
@@ -39,19 +41,10 @@ class ClientController extends MY_BackendController
         $searchData = $request->all();
 
         $data = array();
-        $data["result"] = Client::getList($searchData)->paginate($this->perPage);
+        $data["result"] = Mission::getList($searchData)->paginate($this->perPage);
         $data["dealers"] = array_merge([0 => "請選擇"], Dealer::pluck('dealer_name', 'id')->toArray());
         $data["branchs"] = array_merge([0 => "請選擇"], Branch::pluck('branch_name', 'id')->toArray());
-
-        // FIXME: 把selector的disabled拿掉會發現分店會抓到全部的資料(bug) -> 所以要用下面方法將經銷商對應的分店資料取出來
-        // TODO: 下方為使用From model送出資料後，填入原先的查詢資訊的方法
-        // $data["branchs"] = [0 => "請選擇"]; // 此為預設值 -> 沒有的話進入頁面的時候會噴錯 (在view那邊會得不到$branchs的值)
-
-        // TODO: 判斷經銷商的值是否存在和是否有選擇經銷商
-        // if (isset($searchData["dealer_id"]) && $searchData["dealer_id"] != 0) {
-        //     $data["branchs"] = array_merge([0 => "請選擇"], Branch::where("dealer_releated", $searchData["dealer_id"])->pluck('branch_name', 'id')->toArray());
-        // }
-
+        $data["clients"] = array_merge([0 => "請選擇"], Client::pluck('client_name', 'id')->toArray());
 
         $data["searchData"] = $searchData;
         $data["sidebar_id"] = $this->sidebar_id;
@@ -59,7 +52,7 @@ class ClientController extends MY_BackendController
         $data["permission"] = $this->permission;
         $data["title"] = $this->title;
 
-        return view("backend.client.lists", $data);
+        return view("backend.mission_ajax.lists", $data);
     }
 
     public function add(Request $request)
@@ -80,14 +73,15 @@ class ClientController extends MY_BackendController
             $join->on('branchs.dealer_releated', 'dealers.id');
             $join->whereNull('branchs.deleted_at');
         })->pluck('dealer_name', 'dealers.id');
-        // TODO: laravel collection get key of first item
-        // dd($data['dealers']);
+
         $data["branchs"] = Branch::where('dealer_releated', $data['dealers']->keys()->first())->pluck('branch_name', 'id');
+        // dd($data['branchs']);
+        $data["clients"] = Client::where('branch_releated', $data['branchs']->keys()->first())->pluck('client_name', 'id');
 
-
+        $data['admins'] = Admin::pluck('name', 'id');
         $data['title'] = $this->title;
 
-        return view('backend.client.forms', $data);
+        return view('backend.mission_ajax.forms', $data);
     }
 
     public function addPost(Request $request)
@@ -102,19 +96,21 @@ class ClientController extends MY_BackendController
         $this->validate(
             $request,
             [
-                'client_name' => 'required',
-                'phone_number' => 'required',
-                'branch_releated' => 'required|integer',
+                'mission_name' => 'required',
+                'mission_content' => 'required',
                 'dealer_releated' => 'required|integer',
+                'branch_releated' => 'required|integer',
+                'client_releated' => 'required|integer',
+                'admin_releated' => 'required|integer',
             ]
         );
 
         $data = $request->all();
         $data["created_id"] = Auth::user()->id;
         $data["updated_id"] = Auth::user()->id;
-        $newClient = Client::create($data);
+        $newMission = Mission::create($data);
 
-        if (isset($newClient->id)) {
+        if (isset($newMission->id)) {
             $request->session()->flash('statusCode', '0');
             $request->session()->flash('statusMsg', '新增成功');
         } else {
@@ -122,7 +118,7 @@ class ClientController extends MY_BackendController
             $request->session()->flash('statusMsg', '新增失敗');
         }
 
-        return redirect("/backend/client/lists");
+        return redirect("/backend/mission/lists");
     }
 
     public function upd(Request $request, $id)
@@ -135,24 +131,21 @@ class ClientController extends MY_BackendController
         }
 
         $data = array();
-        $data['data'] = Client::find($id);
+        $data['data'] = Mission::find($id);
 
         $data["dealers"] = Dealer::join('branchs', function ($join) {
             $join->on('branchs.dealer_releated', '=', 'dealers.id');
             $join->whereNull('branchs.deleted_at');
         })->pluck('dealer_name', 'dealers.id');
 
-        // echo $data['data']['dealer_releated'];
-        // exit;
-
-        // dd($data['dealers']);
-
         // FIXME: 這邊的寫法和上面新增不一樣  $data['data']['dealer_releated'] 抓到客戶所對應的經銷商
         $data['branchs'] = Branch::where('dealer_releated', $data['data']['dealer_releated'])->pluck('branch_name', 'id');
+        $data['clients'] = Client::where('branch_releated', $data['data']['branch_releated'])->pluck('client_name', 'id');
+        $data['admins'] = Admin::pluck('name', 'id');
 
         $data['title'] = $this->title;
 
-        return view("backend.client.forms", $data);
+        return view("backend.mission_ajax.forms", $data);
     }
 
     public function updPost(Request $request, $id)
@@ -167,17 +160,19 @@ class ClientController extends MY_BackendController
         $this->validate(
             $request,
             [
-                'client_name' => 'required',
-                'phone_number' => 'required',
-                'branch_releated' => 'required|integer',
+                'mission_name' => 'required',
+                'mission_content' => 'required',
                 'dealer_releated' => 'required|integer',
+                'branch_releated' => 'required|integer',
+                'client_releated' => 'required|integer',
+                'admin_releated' => 'required|integer',
             ]
         );
 
         $data = $request->all();
 
         $data['updated_id'] = Auth::user()->id;
-        $updClient = Client::find($id)->update($data);
+        $updClient = Mission::find($id)->update($data);
 
 
         if ($updClient) {
@@ -188,85 +183,65 @@ class ClientController extends MY_BackendController
             $request->session()->flash('statusMsg', '修改失敗');
         }
 
-        return redirect("/backend/client/lists");
-    }
-
-    public function delData(Request $request)
-    {
-
-        if (strrpos($this->permission, "[" . $this->sidebar_id . "B],") === false) {
-            $request->session()->flash('statusCode', '3');
-            $request->session()->flash('statusMsg', '權限不足');
-            return redirect("/backend");
-        }
-
-        $this->validate(
-            $request,
-            [
-                'op' => 'required',
-                'id' => 'required|integer',
-            ]
-        );
-
-        $data = $request->all();
-
-        if (isset($data["op"]) && $data["op"] == "del") {
-            $deldata = array();
-            // TODO: 取得誰刪除此筆資料
-            $deldata["deleted_id"] = Auth::user()->id;
-            Client::find($data["id"])->update($deldata);
-            Client::destroy($data["id"]);
-        }
-
-        $request->session()->flash('statusCode', '0');
-        $request->session()->flash('statusMsg', '刪除成功');
-        return redirect()->back();
+        return redirect("/backend/mission/lists");
     }
 
     public function searchBranch(Request $request)
     {
-        $branch = Branch::select('id', 'branch_name')->where('dealer_releated', '=', $request->api)->get()->toArray();
-        // dd($branch);
+        $branch = Branch::select('id', 'branch_name')->where('dealer_releated', '=', $request->api_branch)->get()->toArray();
+
         return json_encode($branch);
+    }
+
+    public function searchClient(Request $request)
+    {
+        $client = Client::select('id', 'client_name')->where('branch_releated', '=', $request->api_client)->get()->toArray();
+        // dd($branch);
+        return json_encode($client);
     }
 
     public function exportExcel(Request $request)
     {
         $searchData = $request->all();
-        $result = Client::getList($searchData)->get()->toArray();
+        $data = array();
+        $result = Mission::getList($searchData)->get()->toArray();
         $dt = Carbon::now();
 
         $spreadsheet = new Spreadsheet();
 
         $sheet = $spreadsheet->getActiveSheet();
 
-        $intTitle = array(
+        $initTitle = array(
             'A' => '編號',
             'B' => '經銷商',
             'C' => '分店名稱',
             'D' => '客戶名稱',
-            'E' => '客戶電話',
+            'E' => '指派人員',
+            'F' => '任務名稱',
+            'G' => '任務內容',
         );
+        // echo '<pre>';
+        // print_r($result);
+        // exit;
 
-        $intValue = array(
+        $initValue = array(
             'A' => 'id',
             'B' => 'dealer_name',
             'C' => 'branch_name',
             'D' => 'client_name',
-            'E' => 'phone_number',
+            'E' => 'admin_name',
+            'F' => 'mission_name',
+            'G' => 'mission_content',
         );
 
-        $sheet->mergeCells('A1:E1');
-        $sheet->setCellValue('A1', '客戶管理');
-
-        foreach ($intTitle as $column => $va) {
-            $sheet->setCellValue($column . '2', $va);
+        foreach ($initTitle as $column => $va) {
+            $sheet->setCellValue($column . '1', $va);
         }
 
-        $i = 2;
+        $i = 1;
         foreach ($result as $key => $rs) {
             $i++;
-            foreach ($intValue as $column => $va) {
+            foreach ($initValue as $column => $va) {
                 $sheet->setCellValue($column . $i, $rs[$va]);
             }
         }

@@ -54,7 +54,4 @@ class Client extends MyModel
 
         return $list;
     }
-
-    public function filter()
-    { }
 }

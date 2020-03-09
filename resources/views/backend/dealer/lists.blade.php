@@ -59,7 +59,7 @@
                         @if(strrpos($permission, "[".$sidebar_id."B],") !== false)
                         <div class="tools">
                             <button type="button" class="btn btn-info"
-                                onclick="location.href = '/backend/dealer/lists/add';">新增</button>
+                                onclick="location.href = '/backend/dealer/add';">新增</button>
                         </div>
                         @endif
 
@@ -85,7 +85,7 @@
                                     <td>
                                         {{-- TODO: 判斷是否有編輯和刪除權限 --}}
                                         @if(strrpos($permission, "[".$sidebar_id."C],") !== false)
-                                        <a class="btn green btn-xs" href="/backend/dealer/lists/upd/{{ $rs->id }}">編輯</a>
+                                        <a class="btn green btn-xs" href="/backend/dealer/upd/{{ $rs->id }}">編輯</a>
                                         @endif
                                         @if(strrpos($permission, "[".$sidebar_id."D],") !== false)
                                         <a class="btn btn-danger btn-xs" data-toggle="modal" href="#draggable"
